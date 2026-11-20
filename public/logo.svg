@@ -1,0 +1,20 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="gv-bg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+<stop stop-color="#7C3AED"/>
+<stop offset="0.55" stop-color="#4F46E5"/>
+<stop offset="1" stop-color="#06B6D4"/>
+</linearGradient>
+<linearGradient id="gv-ring" x1="6" y1="30" x2="42" y2="18" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F0ABFC"/>
+<stop offset="1" stop-color="#67E8F9"/>
+</linearGradient>
+</defs>
+<rect width="48" height="48" rx="13" fill="url(#gv-bg)"/>
+<rect x="1" y="1" width="46" height="46" rx="12" stroke="white" stroke-opacity="0.18" stroke-width="2"/>
+<circle cx="24" cy="24" r="10.5" fill="white" fill-opacity="0.95"/>
+<ellipse cx="24" cy="24" rx="19" ry="6" transform="rotate(-20 24 24)" stroke="url(#gv-ring)" stroke-width="2.5"/>
+<path d="M19.5 24h5M22 21.5v5" stroke="#4F46E5" stroke-width="2.2" stroke-linecap="round"/>
+<circle cx="27.6" cy="22.6" r="1.4" fill="#DB2777"/>
+<circle cx="27.6" cy="26.2" r="1.4" fill="#0891B2"/>
+</svg>

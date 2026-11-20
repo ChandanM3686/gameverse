@@ -1,0 +1,29 @@
+databases:
+  - name: gameverse-db
+    plan: free
+    databaseName: gameverse
+    user: gameverse
+
+services:
+  - type: web
+    name: gameverse
+    runtime: node
+    plan: free
+    buildCommand: npm install --ignore-scripts --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gameverse-db
+          property: connectionString
+      - key: GOOGLE_GENERATIVE_AI_API_KEY
+        sync: false
+      - key: TRIGGER_SECRET_KEY
+        sync: false
+      - key: TRIGGER_PROJECT_REF
+        value: proj_virpridihhvlyxrqfqzz
+      - key: APP_PASSWORD
+        sync: false
