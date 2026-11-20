@@ -10,7 +10,7 @@ type Preview =
   | { status: "ready"; url: string; revision: number }
   | { status: "error"; message: string }
 
-type GameError = {
+export type GameError = {
   message: string
   source: string
   line: number | null
@@ -45,15 +45,27 @@ function withoutQuery(value: string) {
   return value.replace(/[?#][^\s)'"]*/g, "")
 }
 
+function gameRelative(value: string, gameId: string) {
+  const marker = new RegExp(`\\S*?/play/${gameId}/`, "g")
+  return withoutQuery(value).replace(marker, "")
+}
+
 export function ChatPreview({
   gameId,
   revision,
+  onGameError,
 }: {
   gameId: string
   revision: number
+  onGameError?: (error: GameError) => void
 }) {
   const [preview, setPreview] = useState<Preview>({ status: "loading" })
   const frameRef = useRef<HTMLIFrameElement>(null)
+  const onGameErrorRef = useRef(onGameError)
+
+  useEffect(() => {
+    onGameErrorRef.current = onGameError
+  }, [onGameError])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -139,6 +151,12 @@ export function ChatPreview({
         logger.fmt`Game preview crashed: ${error.message}`,
         attributes
       )
+
+      onGameErrorRef.current?.({
+        ...error,
+        source: error.source ? gameRelative(error.source, gameId) : "",
+        stack: error.stack ? gameRelative(error.stack, gameId) : "",
+      })
     }
 
     window.addEventListener("message", onMessage)

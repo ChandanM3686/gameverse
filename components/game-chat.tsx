@@ -5,7 +5,7 @@ import type { UIMessage } from "ai"
 import { useRouter } from "next/navigation"
 import { useCallback, useState } from "react"
 
-import { ChatPreview } from "@/components/chat-preview"
+import { ChatPreview, type GameError } from "@/components/chat-preview"
 import { ChatThread } from "@/components/chat-thread"
 import {
   ResizableHandle,
@@ -31,11 +31,14 @@ export function GameChat({
 
   const [hasSandbox, setHasSandbox] = useState(sandboxId !== null)
 
+  const [gameError, setGameError] = useState<GameError | null>(null)
+
   const router = useRouter()
 
   const handleTurnComplete = useCallback(() => {
     setPreviewRevision((revision) => revision + 1)
     setHasSandbox(true)
+    setGameError(null)
 
     router.refresh()
   }, [router])
@@ -47,6 +50,8 @@ export function GameChat({
       initialModelId={initialModelId}
       initialSession={initialSession}
       onTurnComplete={handleTurnComplete}
+      gameError={gameError}
+      onGameErrorHandled={() => setGameError(null)}
     />
   )
 
@@ -72,6 +77,7 @@ export function GameChat({
                 key={gameId}
                 gameId={gameId}
                 revision={previewRevision}
+                onGameError={setGameError}
               />
             </ResizablePanel>
           </>

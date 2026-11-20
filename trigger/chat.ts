@@ -2,6 +2,7 @@ import { chat, upsertIncomingMessage } from "@trigger.dev/sdk/ai"
 import { stepCountIs, streamText } from "ai"
 import { z } from "zod"
 
+import { getGameRow } from "@/lib/db/client"
 import { gameModelSettings } from "@/lib/games/agent"
 import {
   loadGameMessages,
@@ -27,6 +28,13 @@ export const gameChat = chat.agent({
   clientDataSchema: gameClientDataSchema,
   hydrateMessages: async ({ chatId, trigger, incomingMessages }) => {
     const startedAt = performance.now()
+
+    if (!(await getGameRow(chatId))) {
+      throw new Error(
+        `Game ${chatId} is not in this worker's database. The website and the Trigger.dev worker must share the same DATABASE_URL — check the Trigger key environment (dev vs prod) and DATABASE_URL.`
+      )
+    }
+
     const stored = await loadGameMessages(chatId)
 
     const appended = upsertIncomingMessage(stored, {

@@ -15,17 +15,20 @@ import type {
   UIMessageChunk,
 } from "ai"
 import {
+  BugIcon,
   CheckIcon,
   CircleAlertIcon,
   CircleQuestionMarkIcon,
+  WrenchIcon,
 } from "lucide-react"
 import Image from "next/image"
-import Link from "next/link"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { ChatComposer } from "@/components/chat-composer"
+import type { GameError } from "@/components/chat-preview"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Bubble, BubbleContent } from "@/components/ui/bubble"
+import { Button } from "@/components/ui/button"
 import { Marker, MarkerContent, MarkerIcon } from "@/components/ui/marker"
 import { Message, MessageAvatar, MessageContent } from "@/components/ui/message"
 import {
@@ -65,12 +68,16 @@ export function ChatThread({
   initialModelId,
   initialSession,
   onTurnComplete,
+  gameError,
+  onGameErrorHandled,
 }: {
   gameId: string
   initialMessages: UIMessage[]
   initialModelId: GameModelId
   initialSession?: ChatSessionPersistedState
   onTurnComplete: () => void
+  gameError?: GameError | null
+  onGameErrorHandled?: () => void
 }) {
   const [prompt, setPrompt] = useState("")
   const [modelId, setModelId] = useState<GameModelId>(initialModelId)
@@ -151,6 +158,20 @@ export function ChatThread({
       sendMessage()
     }
   }, [gameId, initialMessages, sendMessage])
+
+  function handleFixGameError() {
+    if (!gameError) return
+
+    const location = gameError.source
+      ? `\nLocation: ${gameError.source}${gameError.line !== null ? `:${gameError.line}` : ""}${gameError.column !== null ? `:${gameError.column}` : ""}`
+      : ""
+    const stack = gameError.stack ? `\nStack:\n${gameError.stack}` : ""
+
+    sendMessage({
+      text: `The game crashed in the preview, so nothing renders.\nError: ${gameError.message}${location}${stack}\n\nRead the file, find the root cause and fix it without changing how the game plays.`,
+    })
+    onGameErrorHandled?.()
+  }
 
   function handleSubmit(value: string) {
     sendMessage({ text: value })
@@ -258,6 +279,32 @@ export function ChatThread({
             <CircleAlertIcon />
             <AlertTitle>That turn didn&apos;t finish</AlertTitle>
             <AlertDescription>{error.message}</AlertDescription>
+          </Alert>
+        ) : gameError && status === "ready" && !pendingQuestion ? (
+          <Alert className="border-destructive/50">
+            <BugIcon />
+            <AlertTitle>The game crashed in the preview</AlertTitle>
+            <AlertDescription>
+              <p className="font-mono text-xs break-all">
+                {gameError.message}
+                {gameError.source
+                  ? ` (${gameError.source}${gameError.line !== null ? `:${gameError.line}` : ""})`
+                  : ""}
+              </p>
+              <div className="mt-2 flex gap-2">
+                <Button size="sm" onClick={handleFixGameError}>
+                  <WrenchIcon />
+                  Fix with AI
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onGameErrorHandled?.()}
+                >
+                  Dismiss
+                </Button>
+              </div>
+            </AlertDescription>
           </Alert>
         ) : null}
         <ChatComposer
